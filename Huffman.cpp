@@ -5,8 +5,7 @@
 #include <map>
 using namespace std;
 
-vector<bool> hufCode;
-map<char, vector<bool> > trueTab;
+
 
 class Node
 {
@@ -15,6 +14,8 @@ class Node
     char ch;
     Node *left;
     Node *right;
+    vector<bool> hufCode;
+    map<char, vector<bool> > trueTab;
 
     Node()
     {
