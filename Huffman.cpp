@@ -20,29 +20,85 @@ class Node
     {
         left = right = nullptr;
     }
+    
     Node(Node *l, Node *r) 
 	{
         left =  l;
         right = r;
         key = l->key + r->key;
-    }   
-};
+    }
 
-void tabCreater(Node *tree)
-{
-    if (tree->left != nullptr)
+    void tabCreater()
     {
-        hufCode.push_back(0);
-        tabCreater(tree->left);
+        if (left != nullptr)
+        {
+            hufCode.push_back(0);
+            left->tabCreater();
+        }
+        if (right != nullptr)
+        {
+            hufCode.push_back(1);
+            right->tabCreater();
+        }
+        if (left == nullptr && right == nullptr) trueTab[ch] = hufCode;
+        hufCode.pop_back();
     }
-    if (tree->right != nullptr)
+
+    void zip(const char *fileName)
     {
-        hufCode.push_back(1);
-        tabCreater(tree->right);
+        ifstream input(fileName, ios::out | ios::binary);
+        ofstream output("compressedText.txt", ios::out | ios::binary);
+        int counter = 0;
+        char buff = 0;
+        while(!input.eof())
+        {
+            char sym = input.get();
+            vector<bool> res = trueTab[sym];
+            for (int j = 0; j < res.size(); ++j)
+            {
+                buff |= (res[j] << (7 - counter));
+                ++counter;
+                if (counter == 8)
+                {
+                    counter = 0;
+                    output << buff;
+                    buff = 0;
+                }
+            }
+        }
+        input.close();
+        output.close();
     }
-    if (tree->left == nullptr && tree->right == nullptr) trueTab[tree->ch] = hufCode;
-    hufCode.pop_back();
-}
+
+    void unzip()
+    {
+        ifstream enc("compressedText.txt", ios::in | ios::binary);
+        ofstream dec("uncomressedText.txt", ios::out | ios::binary);
+        Node *tmp = this;
+        int counter = 0;
+        char buff = enc.get();
+        while (!enc.eof())
+        {
+            bool flag = (buff & (1 << (7 - counter)));
+            if (flag) tmp = tmp->right;
+            else tmp = tmp->left;
+            if (tmp->left==nullptr && tmp->right==nullptr)
+            {
+                dec << tmp->ch;
+                tmp = this;
+            }
+            ++counter;
+            if (counter == 8)
+            {
+                counter = 0;
+                buff = enc.get();
+            }
+        }
+        enc.close();
+        dec.close();
+    }
+
+};
 
 struct check
 {
@@ -54,15 +110,14 @@ struct check
 
 int main(int argc, char *argv[])
 {
-    ifstream input("originalText.txt", ios::out | ios::binary);
+    const char *fileName = "originalText.txt";
+    ifstream input(fileName, ios::out | ios::binary);
     map<char, int> tab;
     while(!input.eof())
     {
         char sym = input.get();
         tab[sym]++;
     }
-    input.clear();
-    input.seekg(0);
     list<Node*> tree;
     for (map<char, int>::iterator iter = tab.begin(); iter != tab.end(); ++iter)
     {
@@ -82,51 +137,9 @@ int main(int argc, char *argv[])
         tree.push_back(batya);
     }
     Node *root = tree.front();
-    tabCreater(root);
-    ofstream output("encodedText.txt", ios::out | ios::binary);
-    int counter = 0;
-    char buff = 0;
-    while(!input.eof())
-    {
-        char sym = input.get();
-        vector<bool> res = trueTab[sym];
-        for (int j = 0; j < res.size(); ++j)
-        {
-            buff |= (res[j] << (7 - counter));
-            ++counter;
-            if (counter == 8)
-            {
-                counter = 0;
-                output << buff;
-                buff = 0;
-            }
-        }
-    }
+    root->tabCreater();
     input.close();
-    output.close();
-    ifstream enc("encodedText.txt", ios::in | ios::binary);
-    ofstream dec("decodedText.txt", ios::out | ios::binary);
-    Node *tmp = root;
-    counter = 0;
-    buff = enc.get();
-    while (!enc.eof())
-    {
-        bool flag = (buff & (1 << (7 - counter)));
-        if (flag) tmp = tmp->right;
-        else tmp = tmp->left;
-        if (tmp->left==nullptr && tmp->right==nullptr)
-        {
-            dec << tmp->ch;
-            tmp = root;
-        }
-        ++counter;
-        if (counter == 8)
-        {
-            counter = 0;
-            buff = enc.get();
-        }
-    }
-    enc.close();
-    dec.close();
+    root->zip(fileName);
+    root->unzip();
     return 0;
 }
