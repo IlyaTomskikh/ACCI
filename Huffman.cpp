@@ -15,13 +15,16 @@ class Node
     char ch;
     Node *left;
     Node *right;
+    
 
     Node()
     {
+        key = 0;
+        ch = 0;
         left = right = nullptr;
     }
-    
-    Node(Node *l, Node *r) 
+
+    Node(Node *l, Node *r)
 	{
         left =  l;
         right = r;
@@ -44,9 +47,10 @@ class Node
         hufCode.pop_back();
     }
 
-    void zip(const char *fileName)
+    int zip(const char *fileName)
     {
         ifstream input(fileName, ios::out | ios::binary);
+        if (!input.is_open()) return -1;
         ofstream output("compressedText.txt", ios::out | ios::binary);
         int counter = 0;
         char buff = 0;
@@ -60,19 +64,21 @@ class Node
                 ++counter;
                 if (counter == 8)
                 {
-                    counter = 0;
+                    counter ^= counter;
                     output << buff;
-                    buff = 0;
+                    buff ^= buff;
                 }
             }
         }
         input.close();
         output.close();
+        return 1;
     }
 
-    void unzip()
+    int unzip(const char *compressedFile)
     {
-        ifstream enc("compressedText.txt", ios::in | ios::binary);
+        ifstream enc(compressedFile, ios::in | ios::binary);
+        if (!enc.is_open()) return -1;
         ofstream dec("uncomressedText.txt", ios::out | ios::binary);
         Node *tmp = this;
         int counter = 0;
@@ -90,12 +96,13 @@ class Node
             ++counter;
             if (counter == 8)
             {
-                counter = 0;
+                counter ^= counter;
                 buff = enc.get();
             }
         }
         enc.close();
         dec.close();
+        return 1;
     }
 
 };
@@ -108,9 +115,10 @@ struct check
     }
 };
 
-int main(int argc, char *argv[])
+int main()
 {
     const char *fileName = "originalText.txt";
+    const char *compressedFile = "compressedText.txt";
     ifstream input(fileName, ios::out | ios::binary);
     map<char, int> tab;
     while(!input.eof())
@@ -139,7 +147,19 @@ int main(int argc, char *argv[])
     Node *root = tree.front();
     root->tabCreater();
     input.close();
-    root->zip(fileName);
-    root->unzip();
-    return 0;
+    int test = root->zip(fileName);
+    if (test == -1)
+    {
+        cout << "Couldn't open file " << fileName << endl;
+        return 666;
+    }
+    cout << "File "<< fileName << " was compressed and rewritten to file " << compressedFile << endl;
+    test = root->unzip(compressedFile);
+    if (test == -1)
+    {
+        cout << "Couldn't open file " << compressedFile << endl;
+        return 666;
+    }
+    cout << "File "<< compressedFile << " was uncompressed and rewritten to file uncomressedText.txt" << endl;
+    return 777;
 }
