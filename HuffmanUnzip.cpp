@@ -108,11 +108,11 @@ map<char, int> treeCreater()
     char _ch;
     cout << "pairs number = " << number << endl;
     treeFile >> _key;
-    tab[char(10)] = _key;
+    tab[char(10)] = _key;	//прочитать символ переноса строки не удается, но его код самый маленький из поступающих, поэтому и ключ подается первым
     cout << "tab[new_line] = " << _key << endl;
     --number;
     treeFile >> _key;
-    tab[char(32)] = _key;
+    tab[char(32)] = _key;	//та же логика с пробелами
     cout << "tab[ ] = " << _key << endl;
     --number;
     while(number != 0)
@@ -132,13 +132,13 @@ int main()
     for (map<char, int>::iterator iter = tab.begin(); iter != tab.end(); ++iter)
     {
         char _ch = iter->first;
-        if (_ch == char(10))
+        if (_ch == char(10))	//мне кажется, что проблема где-то в прочтении или обозначении абзаца
         {
             Node *tmp = new Node;
             tmp->ch = char(10);
             tmp->key = tab[char(10)];
         }
-	    if (_ch > 31 && _ch < 127)
+	    if (_ch > 31 && _ch < 127)	//уже известный костыль
         {
 	    	Node *tmp = new Node;
 	    	tmp->ch = iter->first;
@@ -155,7 +155,6 @@ int main()
         tree.pop_front();
         Node *batya = new Node(l, r);
         tree.push_back(batya);
-        //cout << "tree.size() = " << tree.size() << endl << "l = " << *l << " r = " << *r << endl;
     }
     Node *root = tree.front();
     for (int i = 10; i--;) char ch__ = treeFile.get();
