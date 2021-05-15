@@ -146,11 +146,8 @@ int main()
     {
         char _ch;
         input.read(&_ch, 1);
-        //cout << _ch << endl;
-        //if (!(_ch == 13 || _ch == 239 || _ch == 191 || _ch == 187 || _ch == 255 || _ch == 156 || _ch == 171 || _ch == 181 || _ch == 184)) 
-        if (_ch > 31 && _ch < 127 || _ch == 10) tab[char(_ch)]++;
-        //if (_ch == 10) cout << "met new_line" << endl;
-        //++sizeOfFile;
+        if (_ch > 31 && _ch < 127 || _ch == 10) tab[char(_ch)]++;//без этого костыля программа в полностью английском тексте находит буквы "п", "я" (eof), "i" с двумя точками
+	//и ">>" по одному разу каждый
     }
     cout << tab.size() << endl;
     treeFile << tab.size();
@@ -158,7 +155,7 @@ int main()
     for (map<char, int>::iterator iter = tab.begin(); iter != tab.end(); ++iter)
     {
 	    char _ch = iter->first;
-        if (_ch == 10)
+        if (_ch == 10) //тут обрабатывается "\n", который сам по себе не читается, а записать в файл можно только "\r\n"
         {
             Node *tmp = new Node;
             tmp->ch = char(10);
@@ -169,8 +166,8 @@ int main()
         {
 	    	Node *tmp = new Node;
 	    	tmp->ch = iter->first;
-		    tmp->key = iter->second;
-		    treeFile << tmp->ch << tmp->key;
+		tmp->key = iter->second;
+		treeFile << tmp->ch << tmp->key;
 	    	tree.push_back(tmp);
 	    }
     }
@@ -183,7 +180,6 @@ int main()
         tree.pop_front();
         Node *batya = new Node(l, r);
         tree.push_back(batya);
-        //cout << "tree.size() = " << tree.size() << endl << "l = " << *l << " r = " << *r << endl;
     }
     Node *root = tree.front();
     root->tabCreater();
