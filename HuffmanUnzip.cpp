@@ -7,12 +7,9 @@
 #include <map>
 using namespace std;
 
-vector<bool> hufCode;
-map<char, vector<bool> > trueTab;
 string compressed = "compressedText.txt",
 uncompressed = "uncompressedText.txt";
 ifstream treeFile("tree.txt", ios::in | ios::binary);
-long int sizeOfFile = 0;
 
 class Node
 {
@@ -34,6 +31,12 @@ class Node
         left =  l;
         right = r;
         key = l->key + r->key;
+    }
+
+    friend ostream & operator<< (ostream &out, const Node &that)
+    {
+        if (that.ch == 10) return out << "[new_line] = " << that.key << endl;
+        else return out << '[' << that.ch << "] = " << that.key << endl;
     }
 
     int unzip()
@@ -104,11 +107,19 @@ map<char, int> treeCreater()
     treeFile >> number;
     char _ch;
     cout << "pairs number = " << number << endl;
+    treeFile >> _key;
+    tab[char(10)] = _key;
+    cout << "tab[new_line] = " << _key << endl;
+    --number;
+    treeFile >> _key;
+    tab[char(32)] = _key;
+    cout << "tab[ ] = " << _key << endl;
+    --number;
     while(number != 0)
     {
-        treeFile >> _ch;
-        treeFile >> _key;
+        treeFile >> _ch >> _key;
         tab[_ch] = _key;
+        cout << "tab[" << _ch << "] = " << _key << endl;
         --number;
     }
     return tab;
@@ -120,11 +131,20 @@ int main()
     list<Node*> tree;
     for (map<char, int>::iterator iter = tab.begin(); iter != tab.end(); ++iter)
     {
-        cout << "tab[" << iter->first << "] = " << iter->second << endl;
-        Node *tmp = new Node;
-        tmp->ch = iter->first;
-        tmp->key = iter->second;
-        tree.push_back(tmp);
+        char _ch = iter->first;
+        if (_ch == char(10))
+        {
+            Node *tmp = new Node;
+            tmp->ch = char(10);
+            tmp->key = tab[char(10)];
+        }
+	    if (_ch > 31 && _ch < 127)
+        {
+	    	Node *tmp = new Node;
+	    	tmp->ch = iter->first;
+		    tmp->key = iter->second;
+	    	tree.push_back(tmp);
+	    }
     }
     while (tree.size() != 1)
     {
@@ -135,10 +155,11 @@ int main()
         tree.pop_front();
         Node *batya = new Node(l, r);
         tree.push_back(batya);
+        //cout << "tree.size() = " << tree.size() << endl << "l = " << *l << " r = " << *r << endl;
     }
     Node *root = tree.front();
-    char ch__ = 0;
-    for (int i = 10; i--;) treeFile >> ch__;
+    for (int i = 10; i--;) char ch__ = treeFile.get();
+    long int sizeOfFile = 0;
     treeFile >> sizeOfFile;
     treeFile.close();
     int test = root->unzip();
