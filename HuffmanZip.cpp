@@ -59,19 +59,22 @@ class Node
         char buff = 0;
         while(!input.eof())
         {
-            char sym = input.get();
-            vector<bool> res = trueTab[sym];
-            for (int j = 0; j < res.size(); ++j)
-            {
-                buff |= (res[j] << (7 - counter));
-                ++counter;
-                if (counter == 8)
-                {
-                    counter ^= counter;
-                    output << buff;
-                    buff ^= buff;
-                }
-            }
+            char _ch = input.get();
+	    if (!(_ch == 13 || _ch == 239 || _ch == 191 || _ch == 187 || _ch == 255 || _ch == 156 || _ch == 171 || _ch == 181 || _ch == 184))
+	    {
+            	vector<bool> res = trueTab[_ch];
+            	for (int j = 0; j < res.size(); ++j)
+            	{
+                	buff |= (res[j] << (7 - counter));
+                	++counter;
+                	if (counter == 8)
+                	{
+                    		counter ^= counter;
+                    		output << buff;
+                    		buff ^= buff;
+                	}
+            	}
+	    }
         }
         if (counter >= 0 && counter < 8) output << buff;
         input.close();
@@ -135,9 +138,9 @@ int main()
     map<char, int> tab;
     while(!input.eof())
     {
-        char sym;
-        input >> sym;
-        tab[sym]++;
+        char _ch;
+        input >> _ch;
+        if (!(_ch == 13 || _ch == 239 || _ch == 191 || _ch == 187 || _ch == 255 || _ch == 156 || _ch == 171 || _ch == 181 || _ch == 184)) tab[_ch]++;
         //++sizeOfFile;
     }
     cout << tab.size() << endl;
@@ -145,11 +148,15 @@ int main()
     list<Node*> tree;
     for (map<char, int>::iterator iter = tab.begin(); iter != tab.end(); ++iter)
     {
-        Node *tmp = new Node;
-        tmp->ch = iter->first;
-        tmp->key = iter->second;
-        treeFile << tmp->ch << tmp->key;
-        tree.push_back(tmp);
+	    char _ch = iter->first;
+	    if (!(_ch == 13 || _ch == 239 || _ch == 191 || _ch == 187 || _ch == 255 || _ch == 156 || _ch == 171 || _ch == 181 || _ch == 184))
+	    {
+	    	Node *tmp = new Node;
+	    	tmp->ch = iter->first;
+		tmp->key = iter->second;
+		treeFile << tmp->ch << tmp->key;
+	    	tree.push_back(tmp);
+	    }
     }
     while (tree.size() != 1)
     {
