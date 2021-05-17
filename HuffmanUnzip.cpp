@@ -46,22 +46,36 @@ class Node
         ofstream dec(uncompressed, ios::out | ios::binary);
         Node *tmp = this;
         int counter = 0;
-        char buff = enc.get();
+        char buff;
+        enc >> noskipws >> buff;
+        bool flag;
         while (!enc.eof())
         {
-            bool flag = (buff & (1 << (7 - counter)));
+            //cout << noskipws << "char " << char(buff & (1 << (7 - counter))) << endl;
+            flag = (buff & (1 << (7 - counter)));
             if (flag) tmp = tmp->right;
             else tmp = tmp->left;
             if (tmp->left==nullptr && tmp->right==nullptr)
             {
-                dec << tmp->ch;
+                //if (tmp->ch == 13) cout << "new_line" << endl;
+                //else cout << tmp->ch << endl;
+                if (tmp->ch != 10)
+                {
+                    cout << noskipws << tmp->ch;
+                    dec << noskipws << tmp->ch;
+                }
+                else
+                {
+                    cout << noskipws << "\r\n";
+                    dec << noskipws << "\r\n";
+                }
                 tmp = this;
             }
             ++counter;
             if (counter == 8)
             {
                 counter ^= counter;
-                buff = enc.get();
+                enc >> noskipws >> buff;
             }
         }
         enc.close();
@@ -107,17 +121,18 @@ map<char, int> treeCreater()
     treeFile >> number;
     char _ch;
     cout << "pairs number = " << number << endl;
-    treeFile >> _key;
-    tab[char(10)] = _key;	//прочитать символ переноса строки не удается, но его код самый маленький из поступающих, поэтому и ключ подается первым
-    cout << "tab[new_line] = " << _key << endl;
-    --number;
-    treeFile >> _key;
-    tab[char(32)] = _key;	//та же логика с пробелами
-    cout << "tab[ ] = " << _key << endl;
-    --number;
+    //treeFile >> _key;
+    //tab[10] = _key;
+    //cout << "tab[new_line] = " << _key << endl;
+    //--number;
+    //treeFile >> _key;
+    //tab[32] = _key;
+    //cout << "tab[ ] = " << _key << endl;
+    //--number;
     while(number != 0)
     {
-        treeFile >> _ch >> _key;
+        treeFile >> noskipws >> _ch >> _key;
+        if (_ch == 13) _ch = 10;
         tab[_ch] = _key;
         cout << "tab[" << _ch << "] = " << _key << endl;
         --number;
@@ -132,19 +147,20 @@ int main()
     for (map<char, int>::iterator iter = tab.begin(); iter != tab.end(); ++iter)
     {
         char _ch = iter->first;
-        if (_ch == char(10))//проблема в том, что я могу записать перенос строки только как два символа, а в сжатии присутствует один, так как сжимаются символы все по одному
-        {
-            Node *tmp = new Node;
-            tmp->ch = char(10);
-            tmp->key = tab[char(10)];
-        }
-	    if (_ch > 31 && _ch < 127)	//уже известный костыль
+	    if (_ch > 31 && _ch < 127)
         {
 	    	Node *tmp = new Node;
 	    	tmp->ch = iter->first;
 		    tmp->key = iter->second;
 	    	tree.push_back(tmp);
 	    }
+        if (_ch == 10)
+        {
+            Node *tmp = new Node;
+            tmp->ch = '\n';
+            tmp->key = iter->second;
+            tree.push_back(tmp);
+        }
     }
     while (tree.size() != 1)
     {
@@ -155,6 +171,7 @@ int main()
         tree.pop_front();
         Node *batya = new Node(l, r);
         tree.push_back(batya);
+        //cout << "tree.size() = " << tree.size() << endl << "l = " << *l << " r = " << *r << endl;
     }
     Node *root = tree.front();
     for (int i = 10; i--;) char ch__ = treeFile.get();
