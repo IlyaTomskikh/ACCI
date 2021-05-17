@@ -31,7 +31,6 @@ class Node
 	{
         left =  l;
         right = r;
-        //ch = '\n';
         key = l->key + r->key;
     }
 
@@ -47,11 +46,7 @@ class Node
             hufCode.push_back(1);
             right->tabCreater();
         }
-        if (left == nullptr && right == nullptr)
-        {
-            cout << "leaf: " << *this << endl;
-            trueTab[ch] = hufCode;
-        }
+        if (left == nullptr && right == nullptr) trueTab[ch] = hufCode;
         hufCode.pop_back();
     }
 
@@ -65,11 +60,9 @@ class Node
         while(!input.eof())
         {
             char _ch;
-            input >> noskipws >> _ch;
-            //cout << "->" << _ch << "<-" << endl;
+            input.read(&_ch, sizeof(_ch));
 	        if (_ch > 31 && _ch < 127 || _ch == 10)
             {
-                //if (_ch == 13) cout << "new_line" << endl;
                 vector<bool> res = trueTab[_ch];
                 for (int j = 0; j < res.size(); ++j)
                 {
@@ -79,7 +72,6 @@ class Node
                 	{
                     	counter ^= counter;
                     	output << buff;
-                        //cout << buff << endl;
                     	buff ^= buff;
                     }
                 }
@@ -154,11 +146,10 @@ int main()
     while(!input.eof())
     {
         char _ch;
-        input >> noskipws >> _ch;
+        input.read(&_ch, sizeof(_ch));
         if (_ch > 31 && _ch < 127) tab[_ch]++;
         if (_ch = 13) tab[10]++;
     }
-    cout << tab.size() << endl;
     treeFile << tab.size();
     list<Node*> tree;
     for (map<char, int>::iterator iter = tab.begin(); iter != tab.end(); ++iter)
@@ -179,7 +170,7 @@ int main()
             treeFile << '\r' << tmp->key;
             tree.push_back(tmp);
         }
-        cout << noskipws << "ch = " << tmp->ch << ", key = " << tmp->key << endl; 
+        cout << noskipws << *tmp << endl; 
     }
     while (tree.size() != 1)
     {
@@ -190,14 +181,12 @@ int main()
         tree.pop_front();
         Node *batya = new Node(l, r);
         tree.push_back(batya);
-        cout << noskipws << "tree.size() = " << tree.size() << endl << "l = " << *l << " r = " << *r << endl;
     }
     Node *root = tree.front();
     root->tabCreater();
     input.close();
     int test = root->zip(fileName);
     treeFile << "fileSizeIs" << fileSize(fileName);
-    cout << "size of file = " << fileSize(fileName) << " bytes" << endl;
     treeFile.close();
     if (test == -1)
     {
