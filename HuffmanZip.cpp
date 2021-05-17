@@ -31,6 +31,7 @@ class Node
 	{
         left =  l;
         right = r;
+        //ch = '\n';
         key = l->key + r->key;
     }
 
@@ -46,7 +47,11 @@ class Node
             hufCode.push_back(1);
             right->tabCreater();
         }
-        if (left == nullptr && right == nullptr) trueTab[ch] = hufCode;
+        if (left == nullptr && right == nullptr)
+        {
+            cout << "leaf: " << *this << endl;
+            trueTab[ch] = hufCode;
+        }
         hufCode.pop_back();
     }
 
@@ -59,9 +64,12 @@ class Node
         char buff = 0;
         while(!input.eof())
         {
-            char _ch = input.get();
+            char _ch;
+            input >> noskipws >> _ch;
+            //cout << "->" << _ch << "<-" << endl;
 	        if (_ch > 31 && _ch < 127 || _ch == 10)
             {
+                //if (_ch == 13) cout << "new_line" << endl;
                 vector<bool> res = trueTab[_ch];
                 for (int j = 0; j < res.size(); ++j)
                 {
@@ -71,6 +79,7 @@ class Node
                 	{
                     	counter ^= counter;
                     	output << buff;
+                        //cout << buff << endl;
                     	buff ^= buff;
                     }
                 }
@@ -145,31 +154,32 @@ int main()
     while(!input.eof())
     {
         char _ch;
-        input.read(&_ch, 1);
-        if (_ch > 31 && _ch < 127 || _ch == 10) tab[char(_ch)]++;//без этого костыля программа в полностью английском тексте находит буквы "п", "я" (eof), "i" с двумя точками
-	//и ">>" по одному разу каждый
+        input >> noskipws >> _ch;
+        if (_ch > 31 && _ch < 127) tab[_ch]++;
+        if (_ch = 13) tab[10]++;
     }
     cout << tab.size() << endl;
     treeFile << tab.size();
     list<Node*> tree;
     for (map<char, int>::iterator iter = tab.begin(); iter != tab.end(); ++iter)
     {
-	    char _ch = iter->first;
-        if (_ch == 10) //тут обрабатывается "\n", который сам по себе не читается, а записать в файл можно только "\r\n"
+        Node *tmp = new Node;
+        char _ch = iter->first;
+	    if (_ch != 10)
         {
-            Node *tmp = new Node;
-            tmp->ch = char(10);
-            tmp->key = tab[char(10)];
-            treeFile << "\r\n" << tmp->key;
-        }
-	    if (_ch > 31 && _ch < 127)
-        {
-	    	Node *tmp = new Node;
 	    	tmp->ch = iter->first;
-		tmp->key = iter->second;
-		treeFile << tmp->ch << tmp->key;
+		    tmp->key = iter->second;
+            treeFile << tmp->ch << tmp->key;
 	    	tree.push_back(tmp);
 	    }
+        else 
+        {
+            tmp->ch = '\n';
+            tmp->key = iter->second;
+            treeFile << '\r' << tmp->key;
+            tree.push_back(tmp);
+        }
+        cout << noskipws << "ch = " << tmp->ch << ", key = " << tmp->key << endl; 
     }
     while (tree.size() != 1)
     {
@@ -180,6 +190,7 @@ int main()
         tree.pop_front();
         Node *batya = new Node(l, r);
         tree.push_back(batya);
+        cout << noskipws << "tree.size() = " << tree.size() << endl << "l = " << *l << " r = " << *r << endl;
     }
     Node *root = tree.front();
     root->tabCreater();
