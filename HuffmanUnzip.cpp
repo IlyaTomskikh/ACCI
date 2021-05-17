@@ -47,18 +47,15 @@ class Node
         Node *tmp = this;
         int counter = 0;
         char buff;
-        enc >> noskipws >> buff;
+        enc.read(&buff, sizeof(buff));
         bool flag;
         while (!enc.eof())
         {
-            //cout << noskipws << "char " << char(buff & (1 << (7 - counter))) << endl;
             flag = (buff & (1 << (7 - counter)));
             if (flag) tmp = tmp->right;
             else tmp = tmp->left;
             if (tmp->left==nullptr && tmp->right==nullptr)
             {
-                //if (tmp->ch == 13) cout << "new_line" << endl;
-                //else cout << tmp->ch << endl;
                 if (tmp->ch != 10)
                 {
                     cout << noskipws << tmp->ch;
@@ -75,7 +72,7 @@ class Node
             if (counter == 8)
             {
                 counter ^= counter;
-                enc >> noskipws >> buff;
+                enc.read(&buff, sizeof(buff));
             }
         }
         enc.close();
@@ -121,17 +118,10 @@ map<char, int> treeCreater()
     treeFile >> number;
     char _ch;
     cout << "pairs number = " << number << endl;
-    //treeFile >> _key;
-    //tab[10] = _key;
-    //cout << "tab[new_line] = " << _key << endl;
-    //--number;
-    //treeFile >> _key;
-    //tab[32] = _key;
-    //cout << "tab[ ] = " << _key << endl;
-    //--number;
     while(number != 0)
     {
-        treeFile >> noskipws >> _ch >> _key;
+        treeFile.read(&_ch, sizeof(_ch));
+        treeFile >> _key;
         if (_ch == 13) _ch = 10;
         tab[_ch] = _key;
         cout << "tab[" << _ch << "] = " << _key << endl;
@@ -171,7 +161,6 @@ int main()
         tree.pop_front();
         Node *batya = new Node(l, r);
         tree.push_back(batya);
-        //cout << "tree.size() = " << tree.size() << endl << "l = " << *l << " r = " << *r << endl;
     }
     Node *root = tree.front();
     for (int i = 10; i--;) char ch__ = treeFile.get();
@@ -184,14 +173,14 @@ int main()
         cout << "Couldn't open file " << compressed << endl;
         return 666;
     }
-    cout << "size of file must be " << sizeOfFile << " bytes" << endl;
+    cout << "size of file must be " << sizeOfFile - 1 << " bytes" << endl;
     long fS = fileSize(uncompressed);
-    while(fS > sizeOfFile)
+    while(fS > sizeOfFile - 2)
     {
         cout << "current file size = " << fS << endl;
         deleteLastByte(uncompressed);
         fS = fileSize(uncompressed);
     }
-    cout << "File "<< compressed << " was uncompressed and rewritten to file uncomressedText.txt" << endl;
+    cout << "File "<< compressed << " was decompressed and rewritten to file uncomressedText.txt" << endl;
     return 777;
 }
