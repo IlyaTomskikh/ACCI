@@ -77,7 +77,7 @@ class Node
                 }
 	        }
         }
-        if (counter >= 0 && counter < 8) output << buff;
+        if (counter < 8) output << buff;
         input.close();
         output.close();
         return 1;
