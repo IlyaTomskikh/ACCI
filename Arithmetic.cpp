@@ -1,38 +1,75 @@
 #include <iostream>
+#include <map>
 #include <fstream>
+#include <algorithm>
+#include <string>
 #include <vector>
 #include <list>
-#include <map>
-#include <set>
+#include "Interval.hpp"
 using namespace std;
 
-string alphabet = "";
-int *frequency;
-int *tab = new int[256];
-string original = "originalText.txt";
-string compressed = "compressedText.txt";
-string uncompressed = "uncompressedText.txt";
+typedef unsigned char uchar;
 
-void defFreqs()
+map<uchar, double> freqs;
+string comp = "compressedText.txt", decomp = "decompressedText.txt", original = "originalText.txt";
+
+map<uchar, double> alphabetReader(int *size)
 {
-    ifstream input(original, ios::out | ios::binary);
-    while(!input.eof())
+    ifstream orig(original);
+    int counter = 0;
+    map<uchar, double> tab;
+    if(orig.is_open())
     {
-        char c = input.get();
-        if (alphabet.find(c)) tab[c]++;
-        else
+        while(true)
         {
-            alphabet.push_back(c);
-            tab[c]++;
+            uchar _ch = orig.get();
+            if (orig.eof()) break;
+            tab[_ch]++;
+            //cout << _ch;
+            ++counter;
         }
+        cout << endl;
     }
-    input.close();
-    frequency = new int[alphabet.size()];
-    for (int i = 0; i < alphabet.size(); ++i) frequency[i] = tab[alphabet[i]] / alphabet.size();
-    ofstream output(compressed, ios::out | ios::binary);
+    orig.close();
+    *size = counter;
+    return tab;
+}
+
+list<Interval> freqsCreater(map<uchar, double> tab, int fileSize)
+{
+    list<Interval> intervals;
+    double tmp = 0;
+    for (map<uchar, double>::iterator iter = tab.begin(); iter != tab.end(); ++iter)
+    {
+        freqs[iter->first] = (iter->second) / fileSize;
+        cout << "freqs[" << iter->first << "] = " << freqs[iter->first] << endl;
+        intervals.push_back(Interval(tmp, tmp + iter->second / fileSize, iter->first));
+        tmp += iter->second / fileSize;
+    }
+    return intervals;
+}
+
+void mapSort(map<uchar, double> *tab)
+{
+    list<double> tmpToSort;
+    for (map<uchar, double>::iterator iter = tab->begin(); iter != tab->end(); ++iter)
+        tmpToSort.push_back(iter->second);
+    tmpToSort.sort();
+    for (map<uchar, double>::iterator iter = tab->begin(); iter != tab->end(); ++iter)
+    {
+        (*tab)[iter->first] = tmpToSort.back();
+        tmpToSort.pop_back();
+    }
 }
 
 int main()
 {
+    int fileSize = 0;
+    map<uchar, double> tab = alphabetReader(&fileSize);
+    cout << "fileSize = " << fileSize << endl;
+    list<Interval> intervals = freqsCreater(tab, fileSize);
+    for(list<Interval>::iterator iter = intervals.begin(); iter != intervals.end(); ++iter)
+        cout << "interval for symbol "<< iter->getC() << " [" << iter->getL() << "; " << iter->getH() << ')' << endl;
+    
     return 777;
 }
