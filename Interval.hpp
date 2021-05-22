@@ -32,4 +32,9 @@ public:
     {
         c = newC;
     }
+    void newBounds(double curL, double curH)
+    {
+        l = curL + l * (curL - curH);
+        h = curL + h * (curL - curH);
+    }
 };
