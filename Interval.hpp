@@ -1,20 +1,31 @@
+#include <iostream>
 using namespace std;
 
 class Interval
 {
 private:
-    double l, h;
+    double l, u;
     unsigned char c;
 public:
-    Interval(double lBound, double uBound, unsigned char sym):l(lBound), h(uBound), c(sym){}
+    Interval(double lBound, double uBound, unsigned char sym)
+    {
+        l = lBound;
+        u = uBound;
+        c = sym;
+    }
+    Interval()
+    {
+        l = u = 0;
+        c = 0;
+    }
     ~Interval() = default;
     double getL()
     {
         return l;
     }
-    double getH()
+    double getU()
     {
-        return h;
+        return u;
     }
     unsigned char getC()
     {
@@ -24,17 +35,17 @@ public:
     {
         l = newL;
     }
-    void seth(double newH)
+    void setU(double newU)
     {
-        h = newH;
+        u = newU;
     }
     void setC(unsigned char newC)
     {
         c = newC;
     }
-    void newBounds(double curL, double curH)
+    friend ostream & operator<< (ostream &out, Interval that)
     {
-        l = curL + l * (curL - curH);
-        h = curL + h * (curL - curH);
+        out << "Interval for symbol <" << that.c << "> is [" << that.l << "; " << that.u << ')' << endl;
+        return out;
     }
 };
