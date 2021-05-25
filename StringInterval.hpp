@@ -5,10 +5,10 @@ using namespace std;
 class StringInterval
 {
 private:
-    double lBound, uBound;
+    long double lBound, uBound;
     string symbols;
 public:
-    StringInterval(double l, double u, string newSymbols = "");
+    StringInterval(long double l, long double u, string newSymbols = "");
     StringInterval(Interval that);
     StringInterval()
     {
@@ -28,7 +28,7 @@ public:
         else
         {
             symbols.push_back(that.getC());
-            double range = lBound - uBound;
+            long double range = lBound - uBound;
             lBound = lBound + that.getL() * range;
             uBound = lBound + that.getU() * range;
         }
@@ -43,17 +43,17 @@ public:
         return *this;
     }
 
-    double getL()
+    long double getL()
     {
         return lBound;
     }
-    double getU()
+    long double getU()
     {
         return uBound;
     }
 };
 
-StringInterval::StringInterval(double l, double u, string newSymbols)
+StringInterval::StringInterval(long double l, long double u, string newSymbols)
 {
     lBound = l;
     uBound = u;
