@@ -81,10 +81,12 @@ void zip(map<uchar, Interval> intervals)
     ofstream output(comp);
     uchar _ch;
     ldouble l = 0, u = 1, res = 0, tmpRes = 0;
+    string result = "";
     while(1)
     {
         _ch = input.get();
         if (input.eof()) break;
+        result.push_back(_ch);
         /*
         cout << "interval for '" << _ch <<
         "' is [" << intervals[_ch].getL() <<
@@ -100,7 +102,7 @@ void zip(map<uchar, Interval> intervals)
         res = u + l;
         //cout << "u = " << u << "; l = " << l << "; tmpRes = " << tmpRes << endl;
         //system("pause");
-        cout << "res = " << res << endl;
+        //cout << '{' << result << "} res = " << res << endl;
     }
     input.close();
     output << res;
