@@ -4,10 +4,10 @@ using namespace std;
 class Interval
 {
 private:
-    double l, u;
+    long double l, u;
     unsigned char c;
 public:
-    Interval(double lBound, double uBound, unsigned char sym)
+    Interval(long double lBound, long double uBound, unsigned char sym)
     {
         l = lBound;
         u = uBound;
@@ -19,11 +19,11 @@ public:
         c = 0;
     }
     ~Interval() = default;
-    double getL()
+    long double getL()
     {
         return l;
     }
-    double getU()
+    long double getU()
     {
         return u;
     }
@@ -31,11 +31,11 @@ public:
     {
         return c;
     }
-    void setL(double newL)
+    void setL(long double newL)
     {
         l = newL;
     }
-    void setU(double newU)
+    void setU(long double newU)
     {
         u = newU;
     }
