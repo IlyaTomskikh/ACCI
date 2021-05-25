@@ -86,7 +86,7 @@ void zip(map<uchar, Interval> intervals)
     {
         _ch = input.get();
         if (input.eof()) break;
-        result.push_back(_ch);
+        //result.push_back(_ch);
         /*
         cout << "interval for '" << _ch <<
         "' is [" << intervals[_ch].getL() <<
