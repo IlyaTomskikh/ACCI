@@ -99,10 +99,11 @@ void zip(map<uchar, Interval> intervals)
         ldouble new_l = intervals[_ch].getL() * (u - l) + l;
         u = new_u;
         l = new_l;
-        res = u + l;
+        res = (u + l) / 2;
         //cout << "u = " << u << "; l = " << l << "; tmpRes = " << tmpRes << endl;
         //system("pause");
         //cout << '{' << result << "} res = " << res << endl;
+        cout << "symbol '" << _ch << "' and current result is" << res << endl;
     }
     input.close();
     output << res;
