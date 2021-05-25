@@ -4,19 +4,23 @@
 #include <algorithm>
 #include <vector>
 #include <list>
-#include "StringInterval.hpp"
+#include "Interval.hpp"
 using namespace std;
 
 typedef unsigned char uchar;
+typedef long double ldouble;
 
-map<uchar, double> freqs;
-string comp = "compressedText.txt", decomp = "decompressedText.txt", original = "originalText.txt";
+map<uchar, ldouble> freqs;
+string comp = "compressedText.txt",
+decomp = "decompressedText.txt",
+original = "originalText.txt",
+frequency = "frequency.txt";
 
-map<uchar, double> alphabetReader(int *size)
+map<uchar, ldouble> alphabetReader(int *size)
 {
     ifstream orig(original);
     int counter = 0;
-    map<uchar, double> tab;
+    map<uchar, ldouble> tab;
     if(orig.is_open())
     {
         while(true)
@@ -32,27 +36,29 @@ map<uchar, double> alphabetReader(int *size)
     return tab;
 }
 
-list<Interval> freqsCreater(map<uchar, double> tab, int fileSize)
+list<Interval> freqsCreater(map<uchar, ldouble> tab, int fileSize)
 {
     list<Interval> intervals;
-    double tmp = 0;
-    for (map<uchar, double>::iterator iter = tab.begin(); iter != tab.end(); ++iter)
+    ldouble tmp = 0;
+    ofstream frequencyFile(frequency);
+    for (map<uchar, ldouble>::iterator iter = tab.begin(); iter != tab.end(); ++iter)
     {
         freqs[iter->first] = (iter->second) / fileSize;
-        //cout << "freqs[" << iter->first << "] = " << freqs[iter->first] << endl;
+        frequencyFile << iter->first << freqs[iter->first];
         intervals.push_back(Interval(tmp, tmp + iter->second / fileSize, iter->first));
         tmp += iter->second / fileSize;
     }
+    frequencyFile.close();
     return intervals;
 }
 
-void mapSort(map<uchar, double> *tab)
+void mapSort(map<uchar, ldouble> *tab)
 {
-    list<double> tmpToSort;
-    for (map<uchar, double>::iterator iter = tab->begin(); iter != tab->end(); ++iter)
+    list<ldouble> tmpToSort;
+    for (map<uchar, ldouble>::iterator iter = tab->begin(); iter != tab->end(); ++iter)
         tmpToSort.push_back(iter->second);
     tmpToSort.sort();
-    for (map<uchar, double>::iterator iter = tab->begin(); iter != tab->end(); ++iter)
+    for (map<uchar, ldouble>::iterator iter = tab->begin(); iter != tab->end(); ++iter)
     {
         (*tab)[iter->first] = tmpToSort.back();
         tmpToSort.pop_back();
@@ -69,25 +75,42 @@ map<uchar, Interval> mapCreater(list<Interval> list_of_intervals)
     return intervals;
 }
 
-double zip(map<uchar, Interval> intervals)
+void zip(map<uchar, Interval> intervals)
 {
     ifstream input(original);
-    uchar _ch = input.get();
-    StringInterval res = intervals[_ch];
-    while(!input.eof())
+    ofstream output(comp);
+    uchar _ch;
+    ldouble l = 0, u = 1, res = 0, tmpRes = 0;
+    while(1)
     {
         _ch = input.get();
-        //if (input.eof()) break;
-        res += intervals[_ch];
+        if (input.eof()) break;
+        /*
+        cout << "interval for '" << _ch <<
+        "' is [" << intervals[_ch].getL() <<
+        "; " << intervals[_ch].getU() << ')' <<
+        endl << "in other words: lower bound = " << intervals[_ch].getL() <<
+        "; upper bound = " << intervals[_ch].getU() << endl <<
+        "current l = " << l << "; current u = " << u << endl;
+        */
+        ldouble new_u = intervals[_ch].getU() * (u - l) + l;
+        ldouble new_l = intervals[_ch].getL() * (u - l) + l;
+        u = new_u;
+        l = new_l;
+        res = u + l;
+        //cout << "u = " << u << "; l = " << l << "; tmpRes = " << tmpRes << endl;
+        //system("pause");
+        cout << "res = " << res << endl;
     }
     input.close();
-    return res.getL();
+    output << res;
+    output.close();
 }
 
 int main()
 {
     int fileSize = 0;
-    map<uchar, double> tab = alphabetReader(&fileSize);
+    map<uchar, ldouble> tab = alphabetReader(&fileSize);
     //cout << "fileSize = " << fileSize << endl;
     list<Interval> list_of_intervals = freqsCreater(tab, fileSize);
     map<uchar, Interval> intervals = mapCreater(list_of_intervals);
@@ -95,5 +118,6 @@ int main()
     {
         cout << iter->second;
     }
+    zip(intervals);
     return 777;
 }
