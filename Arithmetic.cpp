@@ -4,6 +4,7 @@
 #include <algorithm>
 #include <vector>
 #include <list>
+#include <cstdio>
 #include "Interval.hpp"
 using namespace std;
 
@@ -78,7 +79,7 @@ map<uchar, Interval> mapCreater(list<Interval> list_of_intervals)
 void zip(map<uchar, Interval> intervals)
 {
     ifstream input(original);
-    ofstream output(comp);
+    ofstream output(comp), cons("cons.txt");
     uchar _ch;
     ldouble l = 0, u = 1, res = 0, tmpRes = 0;
     string result = "";
@@ -86,27 +87,42 @@ void zip(map<uchar, Interval> intervals)
     {
         _ch = input.get();
         if (input.eof()) break;
-        //result.push_back(_ch);
-        /*
-        cout << "interval for '" << _ch <<
+        result.push_back(_ch);
+        
+        cons << "interval for '" << _ch <<
         "' is [" << intervals[_ch].getL() <<
         "; " << intervals[_ch].getU() << ')' <<
-        endl << "in other words: lower bound = " << intervals[_ch].getL() <<
-        "; upper bound = " << intervals[_ch].getU() << endl <<
-        "current l = " << l << "; current u = " << u << endl;
-        */
+        endl << "lower bound = " << intervals[_ch].getL() <<
+        ";\nupper bound = " << intervals[_ch].getU() << endl <<
+        "current l = " << l << ";\ncurrent u = " << u << endl;
+        
         ldouble new_u = intervals[_ch].getU() * (u - l) + l;
         ldouble new_l = intervals[_ch].getL() * (u - l) + l;
-        u = new_u;
-        l = new_l;
-        res = (u + l) / 2;
-        //cout << "u = " << u << "; l = " << l << "; tmpRes = " << tmpRes << endl;
+        cons << "///recount///\nu = " << u << "; new_u = " << new_u << endl
+        << "l = " << l << "; new_l = " << new_l << endl;
+        if (new_u != new_l)
+        {
+            u = new_u;
+            l = new_l;
+            res = l / 2 + u / 2;    //problema v peres4ete granic (oni stanovyatsya ravny => res = 0 i zanovo)
+            
+        }
+        else
+        {
+            cons << "output res" << endl;
+            output << res;
+            //cout << "\nres = " << res << endl;
+            //printf("%Lg", res);
+            res = 0.0;
+        }
+        printf("%Lg\n", res);
         //system("pause");
         //cout << '{' << result << "} res = " << res << endl;
-        cout << "symbol '" << _ch << "' and current result is" << res << endl;
+        cons << "symbol '" << _ch << "' and current result is " << res << endl << endl;
     }
     input.close();
-    output << res;
+    cons.close();
+    //output << res;
     output.close();
 }
 
@@ -122,5 +138,6 @@ int main()
         cout << iter->second;
     }
     zip(intervals);
+    system("pause");
     return 777;
 }
