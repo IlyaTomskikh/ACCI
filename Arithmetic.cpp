@@ -48,7 +48,7 @@ list<Interval> freqsCreater(map<uchar, ldouble> tab, int fileSize)
     for (map<uchar, ldouble>::iterator iter = tab.begin(); iter != tab.end(); ++iter)
     {
         freqs[iter->first] = (iter->second) / fileSize;
-        frequencyFile << iter->first << freqs[iter->first];
+        frequencyFile << iter->first << iter->second;
         intervals.push_back(Interval(tmp, tmp + iter->second / fileSize, iter->first));
         tmp += iter->second / fileSize;
     }
@@ -146,6 +146,8 @@ map<uchar, ldouble> freqsReader()
         --size;
     }
     fs_to_dec = fr.get();
+    fr.close();
+    for (map<uchar, ldouble>::iterator iter = tab.begin(); iter != tab.end(); ++iter) iter->second /= fs_to_dec;
     return tab;
 }
 
