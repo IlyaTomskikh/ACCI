@@ -17,6 +17,8 @@ decomp = "decompressedText.txt",
 original = "originalText.txt",
 frequency = "frequency.txt";
 
+int fs_to_dec;
+
 map<uchar, ldouble> alphabetReader(int *size)
 {
     ifstream orig(original);
@@ -42,6 +44,7 @@ list<Interval> freqsCreater(map<uchar, ldouble> tab, int fileSize)
     list<Interval> intervals;
     ldouble tmp = 0;
     ofstream frequencyFile(frequency);
+    frequencyFile << tab.size();
     for (map<uchar, ldouble>::iterator iter = tab.begin(); iter != tab.end(); ++iter)
     {
         freqs[iter->first] = (iter->second) / fileSize;
@@ -49,6 +52,7 @@ list<Interval> freqsCreater(map<uchar, ldouble> tab, int fileSize)
         intervals.push_back(Interval(tmp, tmp + iter->second / fileSize, iter->first));
         tmp += iter->second / fileSize;
     }
+    frequencyFile << fileSize;
     frequencyFile.close();
     return intervals;
 }
@@ -98,8 +102,10 @@ void zip(map<uchar, Interval> intervals)
         
         ldouble new_u = intervals[_ch].getU() * (u - l) + l;
         ldouble new_l = intervals[_ch].getL() * (u - l) + l;
-        cons << "///recount///\nu = " << u << "; new_u = " << new_u << endl
-        << "l = " << l << "; new_l = " << new_l << endl;
+        cons << "///recount///\nu = " << u << "; new_u = " << intervals[_ch].getU()
+        << " * (" << u << " - " << l << ") + " << l << " = " << new_u << endl
+        << "l = " << l << "; new_l = " << intervals[_ch].getL()
+        << " * (" << u << " - " << l << ") + " << l << " = " << new_l << endl;
         if (new_u != new_l)
         {
             u = new_u;
@@ -122,8 +128,43 @@ void zip(map<uchar, Interval> intervals)
     }
     input.close();
     cons.close();
-    //output << res;
+    cons << "output res" << endl;
+    output << res;
     output.close();
+}
+
+map<uchar, ldouble> freqsReader()
+{
+    map<uchar, ldouble> tab;
+    ifstream fr(frequency);
+    int size = fr.get();
+    while(size > 0)
+    {
+        uchar _ch = fr.get();
+        ldouble _ld = fr.get();
+        tab[_ch] = _ld;
+        --size;
+    }
+    fs_to_dec = fr.get();
+    return tab;
+}
+
+void unzip(map<uchar, Interval> intervals)
+{
+    ofstream output(decomp);
+    ldouble code = 0.0;
+    for (int i = 0; i < fs_to_dec - 1; ++i)
+    {
+        for (int j = 0; j < intervals.size() - 1; ++j)
+        {
+            if (code >= intervals[j].getL() && code >= intervals[j].getU())
+            {
+                output << intervals[j].getC();
+                code = (code - intervals[j].getL()) / (intervals[j].getU() - intervals[j].getL());
+                break;
+            }
+        }
+    }
 }
 
 int main()
@@ -137,7 +178,16 @@ int main()
     {
         cout << iter->second;
     }
+    cout << "zip" << endl;
     zip(intervals);
-    system("pause");
+    tab = freqsReader();
+    list<Interval> listForDec = freqsCreater(tab, fs_to_dec);
+    map<uchar, Interval> intervals_to_dec = mapCreater(listForDec);
+    for (map<uchar, Interval>::iterator iter = intervals_to_dec.begin(); iter != intervals_to_dec.end(); ++iter)
+    {
+        cout << iter->second;
+    }
+    cout << "unzip" << endl;
+    unzip(intervals_to_dec);
     return 777;
 }
