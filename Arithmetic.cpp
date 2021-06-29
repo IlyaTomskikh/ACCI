@@ -40,6 +40,7 @@ void zip(list<Interval> intervals, map<char, int> tab)
 {
     ofstream compressed(comp, ios::binary);
     int tabSize = tab.size();
+    //frequencies -> compressed file
     compressed.write((char*)&tabSize, sizeof(tabSize));
     for (map<char, int>::iterator iter = tab.begin(); iter != tab.end(); ++iter)
     {
@@ -60,12 +61,12 @@ void zip(list<Interval> intervals, map<char, int> tab)
         if (current == EOF) break;
         std::cout << "current encoding symbol is " << current << endl;
         list<Interval>::iterator iter = intervals.begin();
-        for (; iter->getC() != current && iter != intervals.end(); ++iter);
+        for (; iter != intervals.end() && iter->getC() != current; ++iter);
         std::cout << "'iterator' After search:" << endl << *iter
          << "current interval is [" << u << "; " << l << ')' << endl;
         u = l + iter->getU() * (u - l + 1) / divisor - 1;
         l += iter->getL() * (u - l + 1) / divisor;
-        std::cout << "new interval is [" << u << "; " << l << ')' << endl;
+        std::cout << "new interval is [" << l << "; " << u << ')' << endl;
         while(1)
         {
             if (u < half)
@@ -130,7 +131,55 @@ void zip(list<Interval> intervals, map<char, int> tab)
 
 void unzip(list<Interval> intervalsToUnzip, int fullLen)
 {
-    
+    ifstream compressedF(comp, ios::binary);
+    if (!compressedF.is_open()) exit(666);
+    ofstream decompressed(decomp, ios::binary);
+    int divisor = intervalsToUnzip.back().getU(),
+    val = (compressedF.get() << 8) | compressedF.get(),
+    counter = 0;
+    char toDec = compressedF.get();
+    ushort l = 0, u = 65535;
+    while(fullLen)
+    {
+        list<Interval>::iterator iter = intervalsToUnzip.begin();
+        unsigned int freq = (((val - l + 1) * divisor) - 1) / (u - l + 1);
+        for (; iter->getU() <= freq; ++iter);
+        u = l + iter->getU() * (u - l + 1) / divisor - 1;
+        l += iter->getL() * (u - l + 1) / divisor;
+        while (1)
+        {
+            if (u < half)
+            {}
+            else if (l >= half)
+            {
+                val -= half;
+                l -= half;
+                u -= half;
+            }
+            else if (l >= qtr1 && u < qtr3)
+            {
+                val -= qtr1;
+                l -= qtr1;
+                u -= qtr1;
+            }
+            else break;
+            l <<= 1;
+            u <<= 1;
+            ++u;
+            val <<= 1;
+            val += (toDec & (1 << (7 - counter))) >> (7 - counter);
+            ++counter;
+            if (counter == 8)
+            {
+                counter ^= counter;
+                toDec = compressedF.get();
+            }
+        }
+        decompressed << iter->getC();
+        --fullLen;
+    }
+    compressedF.close();
+    decompressed.close();
 }
 
 int main()
@@ -207,55 +256,7 @@ int main()
         std::cout << *iter;
     }
     system("pause");
-    ifstream compressedF(comp, ios::binary);
-    if (!compressedF.is_open()) exit(666);
-    ofstream decompressed(decomp, ios::binary);
-    int divisor = intervalsToUnzip.back().getU(),
-    val = (compressedF.get() << 8) | compressedF.get(),
-    counter = 0;
-    char toDec = compressedF.get();
-    ushort l = 0, u = 65535;
-    while(fullLen)
-    {
-        list<Interval>::iterator iter = intervalsToUnzip.begin();
-        unsigned int freq = (((val - l + 1) * divisor) - 1) / (u - l + 1);
-        for (; iter->getU() <= freq; ++iter);
-        u = l + iter->getU() * (u - l + 1) / divisor - 1;
-        l += iter->getL() * (u - l + 1) / divisor;
-        while (1)
-        {
-            if (u < half)
-            {}
-            else if (l >= half)
-            {
-                val -= half;
-                l -= half;
-                u -= half;
-            }
-            else if (l >= qtr1 && u < qtr3)
-            {
-                val -= qtr1;
-                l -= qtr1;
-                u -= qtr1;
-            }
-            else break;
-            l <<= 1;
-            u <<= 1;
-            ++u;
-            val <<= 1;
-            val += (toDec & (1 << (7 - counter))) >> (7 - counter);
-            ++counter;
-            if (counter == 8)
-            {
-                counter ^= counter;
-                toDec = compressedF.get();
-            }
-        }
-        decompressed << iter->getC();
-        --fullLen;
-    }
-    compressedF.close();
-    decompressed.close();
+    unzip(intervalsToUnzip, fullLen);
     std::cout << "file '" << comp << "' has been decompressed and written in '" << decomp << "' file" << endl;
     return 777;
 }
