@@ -12,8 +12,7 @@ typedef unsigned short ushort;
 
 string comp = "compressedText.txt",
 decomp = "decompressedText.txt",
-original = "originalText.txt",
-frequency = "frequency.txt";
+original = "originalText.txt";
 
 const ushort qtr1 = (65535 + 1) / 4, half = qtr1 * 2, qtr3 = qtr1 * 3;
 
@@ -33,8 +32,6 @@ map<char, int> tabCreater(string txtFile)
     fin.close();
     return tab;
 }
-
-
 
 void zip(list<Interval> intervals, map<char, int> tab)
 {
