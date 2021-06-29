@@ -1,51 +1,65 @@
 #include <iostream>
+#include <fstream>
 using namespace std;
 
 class Interval
 {
 private:
-    long double l, u;
-    unsigned char c;
+    int l, u;
+    unsigned int key;
+    char c;
 public:
-    Interval(long double lBound, long double uBound, unsigned char sym)
+    Interval(int lBound = 0, int uBound = 0, unsigned int k = 0, char sym = 0)
     {
         l = lBound;
         u = uBound;
+        key = k;
         c = sym;
     }
-    Interval()
-    {
-        l = u = 0;
-        c = 0;
-    }
     ~Interval() = default;
-    long double getL()
+    int getL()
     {
         return l;
     }
-    long double getU()
+    int getU()
     {
         return u;
     }
-    unsigned char getC()
+    unsigned int getKey() const
+    {
+        return key;
+    }
+    char getC()
     {
         return c;
     }
-    void setL(long double newL)
+    void setL(int newL)
     {
         l = newL;
     }
-    void setU(long double newU)
+    void setU(int newU)
     {
         u = newU;
     }
-    void setC(unsigned char newC)
+    void setKey(unsigned int k)
+    {
+        key = k;
+    }
+    void setC(char newC)
     {
         c = newC;
     }
-    friend ostream & operator<< (ostream &out, Interval that)
+    friend ostream & operator<< (ostream &out, Interval &that)
     {
-        out << "Interval for symbol <" << that.c << "> is [" << that.l << "; " << that.u << ')' << endl;
+        out << "Interval for symbol <" << that.c << "> is [" << that.l << "; " << that.u << ") and key = " << that.key << endl;
         return out;
+    }
+};
+
+struct check
+{
+    bool operator() (const Interval i1, const Interval i2) const
+    {
+        return i1.getKey() > i2.getKey();
     }
 };
