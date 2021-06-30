@@ -46,12 +46,12 @@ void zip(list<Interval> intervals, map<char, int> tab)
     }
     ushort l = 0, u = 65535;
     int divisor = intervals.back().getU(),
-    bitsToFollow = 0,
+    bitsToFollow = 0,   //drop
     counter = 0;
     ifstream orig(original, ios::binary);
     if (!orig.is_open()) exit(666);
     char toWrite = 0;
-    while(!orig.eof())//swap 1
+    while(1)
     {
         int current = orig.get();
         if (current == EOF) break;
@@ -71,7 +71,7 @@ void zip(list<Interval> intervals, map<char, int> tab)
                     toWrite ^= toWrite;
                     counter ^= counter;
                 }
-                for(; bitsToFollow > 0; --bitsToFollow)
+                for(; bitsToFollow > 0; --bitsToFollow) //transfer of found bits
                 {
                     toWrite |= (1 << (7 - counter));
                     ++counter;
@@ -127,7 +127,7 @@ void unzip(list<Interval> intervalsToUnzip, int fullLen, ifstream &compressedF)
     
     ofstream decompressed(decomp, ios::binary);
     int divisor = intervalsToUnzip.back().getU(),
-    val = (compressedF.get() << 8) | compressedF.get(),
+    val = (compressedF.get() << 8) | compressedF.get(), //16 bits
     counter = 0;
     char toDec = compressedF.get();
     ushort l = 0, u = 65535;
@@ -214,11 +214,8 @@ int main()
     for (map<char, int>::iterator iter = freqs.begin(); iter != freqs.end(); ++iter)
     {
         Interval tmpI(0, 0, iter->second, iter->first);
-        cout << tmpI;
         intervalsToUnzip.push_back(tmpI);
     }
-    for (auto iter = intervalsToUnzip.begin(); iter != intervalsToUnzip.end(); ++iter)
-        std::cout << *iter;
     intervalsToUnzip.sort(check());
     tmpBound ^= tmpBound;
     for (auto iter = intervalsToUnzip.begin(); iter != intervalsToUnzip.end(); ++iter)
